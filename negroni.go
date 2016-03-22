@@ -110,6 +110,27 @@ func (n *Negroni) RunTLS(addr string, certFile string, keyFile string) {
 	l.Fatal(http.ListenAndServeTLS(addr, certFile, keyFile, n))
 }
 
+// RunWithOptions is a convenience function that runs the negroni stack as a
+// provided HTTP server, with the following caveats:
+// 1. the Handler field of the provided serverConfig should be nil,
+//    because the Handler used will be the n Negroni object.
+func (n *Negroni) RunTLSWithOptions(addr string, certFile string, keyFile string, serverConfig *http.Server) {
+	l := log.New(os.Stdout, "[negroni] ", 0)
+	if serverConfig.Addr == "" {
+		l.Fatal("Address not specified.")
+	}
+	if serverConfig.Handler != nil {
+		l.Fatal("Handler not supported.")
+	}
+	// Don't need this since ListenAndServeTLS expects Handler argument
+	//serverConfig.Handler = n
+	if serverConfig.ErrorLog == nil {
+		serverConfig.ErrorLog = l
+	}
+	l.Printf("listening on %s with configuration %v\n", serverConfig.Addr, serverConfig)
+	l.Fatal(serverConfig.ListenAndServeTLS(addr, certFile, keyFile, n))
+}
+
 // Returns a list of all the handlers in the current Negroni middleware chain.
 func (n *Negroni) Handlers() []Handler {
 	return n.handlers
