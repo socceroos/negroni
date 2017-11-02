@@ -105,8 +105,8 @@ func (n *Negroni) Run(addr string) {
 // RunTLS is a convenience function that runs the negroni stack as an HTTPS
 // server. The addr string, certFile string, keyFile string takes the same format as http.ListenAndServeTLS.
 func (n *Negroni) RunTLS(addr string, certFile string, keyFile string) {
- 	l := log.New(os.Stdout, "[negroni] ", 0)
- 	l.Printf("listening on %s (TLS)", addr)
+	l := log.New(os.Stdout, "[negroni] ", 0)
+	l.Printf("listening on %s (TLS)", addr)
 	l.Fatal(http.ListenAndServeTLS(addr, certFile, keyFile, n))
 }
 
@@ -122,13 +122,14 @@ func (n *Negroni) RunTLSWithOptions(addr string, certFile string, keyFile string
 	if serverConfig.Handler != nil {
 		l.Fatal("Handler not supported.")
 	}
-	// Don't need this since ListenAndServeTLS expects Handler argument
-	//serverConfig.Handler = n
+
+	serverConfig.Handler = n
+
 	if serverConfig.ErrorLog == nil {
 		serverConfig.ErrorLog = l
 	}
-	l.Printf("listening on %s with configuration %v\n", serverConfig.Addr, serverConfig)
-	l.Fatal(serverConfig.ListenAndServeTLS(addr, certFile, keyFile, n))
+	l.Printf("listening on %s with configuration %+v\n", serverConfig.Addr, serverConfig)
+	l.Fatal(serverConfig.ListenAndServeTLS(certFile, keyFile))
 }
 
 // Returns a list of all the handlers in the current Negroni middleware chain.
